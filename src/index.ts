@@ -1,7 +1,7 @@
 import express from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+// import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerTools } from "./lib/tools.js";
 import { registerPrompts } from "./lib/prompts.js";
 
@@ -24,45 +24,45 @@ registerTools(server);
  * Uncomment this to run the server using the stdio transport
  * Allows running it locally with Claude Desktop
  */
-// async function main() {
-//   const transport = new StdioServerTransport();
-//   await server.connect(transport);
-//   console.error("Medplum Scheduling MCP Server running");
-// }
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("Medplum Scheduling MCP Server running");
+}
 
-// main().catch((error) => {
-//   console.error("Fatal error in main():", error);
-//   process.exit(1);
-// });
+main().catch((error) => {
+  console.error("Fatal error in main():", error);
+  process.exit(1);
+});
 
 const app = express();
 app.use(express.json());
 
-const transports = {
-  sse: {} as Record<string, SSEServerTransport>,
-};
-
+// const transports = {
+//   sse: {} as Record<string, SSEServerTransport>,
+// };
+// 
 // OpenAI only supports SSE
-app.get("/sse", async (req, res) => {
-  const transport = new SSEServerTransport("/messages", res);
-  transports.sse[transport.sessionId] = transport;
+// app.get("/sse", async (req, res) => {
+//   const transport = new SSEServerTransport("/messages", res);
+//   transports.sse[transport.sessionId] = transport;
 
-  res.on("close", () => {
-    delete transports.sse[transport.sessionId];
-  });
+//   res.on("close", () => {
+//     delete transports.sse[transport.sessionId];
+//   });
 
-  await server.connect(transport);
-});
+//   await server.connect(transport);
+// });
 
-// Legacy message endpoint for older clients
-app.post("/messages", async (req, res) => {
-  const sessionId = req.query.sessionId as string;
-  const transport = transports.sse[sessionId];
-  if (transport) {
-    await transport.handlePostMessage(req, res);
-  } else {
-    res.status(400).send("No transport found for sessionId");
-  }
-});
+// // Legacy message endpoint for older clients
+// app.post("/messages", async (req, res) => {
+//   const sessionId = req.query.sessionId as string;
+//   const transport = transports.sse[sessionId];
+//   if (transport) {
+//     await transport.handlePostMessage(req, res);
+//   } else {
+//     res.status(400).send("No transport found for sessionId");
+//   }
+// });
 
-app.listen(3000);
+// app.listen(3000);
