@@ -20,6 +20,10 @@ const server = new McpServer({
 registerPrompts(server);
 registerTools(server);
 
+/**
+ * Uncomment this to run the server using the stdio transport
+ * Allows running it locally with Claude Desktop
+ */
 // async function main() {
 //   const transport = new StdioServerTransport();
 //   await server.connect(transport);
@@ -34,14 +38,12 @@ registerTools(server);
 const app = express();
 app.use(express.json());
 
-// Store transports for each session type
 const transports = {
   sse: {} as Record<string, SSEServerTransport>,
 };
 
 // OpenAI only supports SSE
 app.get("/sse", async (req, res) => {
-  // Create SSE transport for legacy clients
   const transport = new SSEServerTransport("/messages", res);
   transports.sse[transport.sessionId] = transport;
 
